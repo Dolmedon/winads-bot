@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static io.github.anisthesie.Main.account;
 
@@ -75,28 +76,75 @@ public class DefaultUserJob implements Job {
             return;
         }
 
-        Optional<ReelMedia> optionalReelMedia = storyResponse.getReel().getItems().stream().filter(reel ->
+        Optional<ReelMedia>  optionalReelMedia = storyResponse.getReel().getItems().stream().filter(reel ->
                 reel.getExtraProperties().containsKey("story_quizs") &&
                         reel.getExtraProperties().containsKey("story_quiz_participant_infos")).findFirst();
+        Optional<ReelMedia>  optionalReelMedia1 = null;
+        ArrayList<LinkedHashMap<String, Object>> participants = new ArrayList<LinkedHashMap<String, Object>>();
+        try {
+
+
+            for (int i = 0; i < 100; i++) {
+                Optional<ReelMedia>  optionalReelMedia2 = storyResponse.getReel().getItems().stream().filter(reel ->
+                    reel.getExtraProperties().containsKey("story_quizs") &&
+                            reel.getExtraProperties().containsKey("story_quiz_participant_infos")).findAny();
+                //System.out.println(storyResponse.getReel().getItems().stream().filter(reel -> reel.getExtraProperties().containsKey("story_quizs")).count());
+                System.out.println(storyResponse.getReel().getItems().stream().filter(reel ->
+                        reel.getExtraProperties().containsKey("story_quizs") &&
+                                reel.getExtraProperties().containsKey("story_quiz_participant_infos")).findAny());
+
+                if (optionalReelMedia1!=optionalReelMedia2 && optionalReelMedia2.isPresent()) {
+                    optionalReelMedia1 = optionalReelMedia2;
+
+                    if (!optionalReelMedia2.isPresent()) {
+                        System.out.println("Comprobaci√≥n completa. Ninguna historia contiene cuestionario.");
+                        return;
+                    }
+                    ReelMedia reelMedia = optionalReelMedia2.get();
+
+                    //System.out.println(reelMedia.getExtraProperties());
+                    if (participants.contains(((ArrayList<LinkedHashMap<String, Object>>) ((LinkedHashMap<String, Object>)
+                            ((ArrayList) reelMedia.getExtraProperties().get("story_quiz_participant_infos")).get(0)).get("participants")).get(0)))
+
+                        System.out.println("Participantes ya a√±adidos a la lista");
+                    else
+                        participants.addAll(((ArrayList<LinkedHashMap<String, Object>>) ((LinkedHashMap<String, Object>)
+                                ((ArrayList) reelMedia.getExtraProperties().get("story_quiz_participant_infos")).get(0)).get("participants")));
+
+
+                    }
+                }
+
+        } catch (Exception e){
+            ;
+        }
         if (!optionalReelMedia.isPresent()) {
             System.out.println("Comprobaci√≥n completa. Ninguna historia contiene cuestionario.");
             return;
         }
         ReelMedia reelMedia = optionalReelMedia.get();
-         // PROBAR
-        
+        // PROBAR
+
         // Lista de participantes completa
         Integer number_pages = (Integer) ((ArrayList) reelMedia.getExtraProperties().get("story_quiz_participant_infos")).size();
-        ArrayList<LinkedHashMap<String, Object>> participants;
-        for (int i = 0; i > (number_pages-1); i++) {
-        		// Lista de participantes dividida en p·ginas (?)
-        		ArrayList<LinkedHashMap<String, Object>> participants_page = ((ArrayList<LinkedHashMap<String, Object>>) ((LinkedHashMap<String, Object>) ((ArrayList) reelMedia.getExtraProperties().get("story_quiz_participant_infos")).get(i)).get("participants"));
-        	for (int j = 0; j < participants_page.size(); j++) {
-        		// AÒadir participantes de la p·gina obtenida a la lista de participantes completa
-        		participants.append(participants_page.get(j));
-        	}
+
+
+        try {
+            for (int i = 0; i < 100; i++) {
+                // Lista de participantes dividida en pÔøΩginas (?)
+                ArrayList<LinkedHashMap<String, Object>> participants_page = ((ArrayList<LinkedHashMap<String, Object>>) ((LinkedHashMap<String, Object>) ((ArrayList) reelMedia.getExtraProperties().get("story_quiz_participant_infos")).get(i
+                )).get("participants"));
+                System.out.println(participants_page);
+                for (int j = 0; j < participants_page.size(); j++) {
+                    // AÔøΩadir participantes de la pÔøΩgina obtenida a la lista de participantes completa
+                    participants.add(participants_page.get(j));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("No hay m√°s participantes.");
         }
-        
+
+
         // --PROBAR--
         Integer answer = (Integer) ((LinkedHashMap<String, Object>) ((ArrayList<LinkedHashMap<String, Object>>) reelMedia.getExtraProperties().get("story_quizs")).get(0).get("quiz_sticker"))
                 .get("correct_answer");
